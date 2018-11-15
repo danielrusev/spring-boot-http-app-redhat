@@ -1,0 +1,31 @@
+apiVersion: skaffold/v1alpha2
+kind: Config
+build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.DOCKER_REGISTRY}}/danielrusev/spring-boot-http-app-redhat:{{.VERSION}}"
+  artifacts:
+  - imageName: changeme
+    workspace: .
+    docker: {}
+  local: {}
+deploy:
+  kubectl:
+    manifests:
+profiles:
+- name: dev
+  build:
+    tagPolicy:
+      envTemplate:
+        template: "{{.DOCKER_REGISTRY}}/danielrusev/spring-boot-http-app-redhat:{{.DIGEST_HEX}}"
+    artifacts:
+    - docker: {}
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: spring-boot-http-app-redhat
+        chartPath: charts/spring-boot-http-app-redhat
+        setValueTemplates:
+          image.repository: "{{.DOCKER_REGISTRY}}/danielrusev/spring-boot-http-app-redhat"
+          image.tag: "{{.DIGEST_HEX}}"
